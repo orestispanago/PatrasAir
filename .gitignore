@@ -1,6 +1,6 @@
 
 *.log
 
-*.csv
+data/
 
 __pycache__/
