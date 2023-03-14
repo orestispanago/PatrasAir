@@ -19,8 +19,6 @@ logger = logging.getLogger(__name__)
 
 READ_KEY = ""
 SENSORS_FILE = "sensors.csv"
-PM25_ALERT_THRESHOLD = 20
-INTERVAL_MINUTES = 15
 
 
 def download_historical(sensor_id, start="", end="", average_minutes=0):
@@ -44,6 +42,12 @@ def download_historical(sensor_id, start="", end="", average_minutes=0):
     )
     resp = requests.get(url, headers={"x-api-key": READ_KEY})
     logger.debug(f"Sensor ID: {sensor_id}, Response status: {resp.status_code}")
+    if resp.status_code != 200:
+        logger.error(
+            f"Response status not 200 for sensor ID: {sensor_id}\n"
+            f"Response status: {resp.status_code}\n"
+            f"Response text: \n {resp.text}"
+        )
     data = StringIO(resp.text)
     df = pd.read_csv(data, parse_dates=True, index_col="time_stamp")
     logger.info(f"Retrieved {len(df)} records for sensor id: {sensor_id}")
@@ -113,7 +117,7 @@ def mkdir_if_not_exists(dir_path):
         logger.debug(f"Created local directory {dir_path}")
 
 
-def save_pm25(df, sensor_name="", prefix=""):
+def save_pm25_csv(df, sensor_name="", prefix=""):
     fpath = f"data/{sensor_name}/{prefix}{sensor_name}.csv"
     mkdir_if_not_exists(os.path.dirname(fpath))
     df = df.filter(["pm2.5"])
@@ -136,8 +140,8 @@ def main():
         )
         correct_data(last_day)
         correct_data(last_week)
-        save_pm25(last_day, sensor_name=sensor_name, prefix="24h_")
-        save_pm25(last_week, sensor_name=sensor_name, prefix="7d_")
+        save_pm25_csv(last_day, sensor_name=sensor_name, prefix="24h_")
+        save_pm25_csv(last_week, sensor_name=sensor_name, prefix="7d_")
     logger.debug(f"{'-' * 15} SUCCESS {'-' * 15}")
 
 
