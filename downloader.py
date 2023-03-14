@@ -1,8 +1,6 @@
 import fnmatch
 import logging
-import logging.config
 import os
-import traceback
 from datetime import datetime, timedelta
 from io import StringIO
 
@@ -10,15 +8,11 @@ import numpy as np
 import pandas as pd
 import requests
 
-dname = os.path.dirname(__file__)
-os.chdir(dname)
-
-logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
-
 logger = logging.getLogger(__name__)
 
 READ_KEY = ""
 SENSORS_FILE = "sensors.csv"
+DATETIME_FORMAT = "%Y-%m-%dT%XZ"
 
 
 def download_historical(sensor_id, start="", end="", average_minutes=0):
@@ -50,7 +44,9 @@ def download_historical(sensor_id, start="", end="", average_minutes=0):
         )
     data = StringIO(resp.text)
     df = pd.read_csv(data, parse_dates=True, index_col="time_stamp")
-    logger.info(f"Retrieved {len(df)} records for sensor id: {sensor_id}")
+    logger.info(
+        f"Retrieved {len(df)} records for sensor id: {sensor_id}, average: {average_minutes} minutes"
+    )
     df.sort_index(inplace=True)
     return df
 
@@ -117,20 +113,20 @@ def mkdir_if_not_exists(dir_path):
         logger.debug(f"Created local directory {dir_path}")
 
 
-def save_pm25_csv(df, sensor_name="", prefix=""):
-    fpath = f"data/{sensor_name}/{prefix}{sensor_name}.csv"
+def save_pm25_csv(df, dir="data", sensor_name="", prefix=""):
+    fpath = f"{dir}/{sensor_name}/{prefix}{sensor_name}.csv"
     mkdir_if_not_exists(os.path.dirname(fpath))
     df = df.filter(["pm2.5"])
     df.to_csv(fpath)
-    logger.info(f"Wrote file: {fpath}")
+    logger.info(f"Wrote {len(df)} records to: {fpath}")
 
 
-def main():
+def download_qc_data(dir="data"):
     sensors = pd.read_csv(SENSORS_FILE)
     utc_now = pd.to_datetime(datetime.utcnow(), utc=True)
-    yesterday = (utc_now - timedelta(days=1)).strftime("%Y-%m-%dT%XZ")
-    a_week_ago = (utc_now - timedelta(days=7)).strftime("%Y-%m-%dT%XZ")
-    end_date = utc_now.strftime("%Y-%m-%dT%XZ")
+    yesterday = (utc_now - timedelta(days=1)).strftime(DATETIME_FORMAT)
+    a_week_ago = (utc_now - timedelta(days=7)).strftime(DATETIME_FORMAT)
+    end_date = utc_now.strftime(DATETIME_FORMAT)
     for index, row in sensors.iterrows():
         sensor_id = row["sensor_index"]
         sensor_name = row["name"]
@@ -140,13 +136,6 @@ def main():
         )
         correct_data(last_day)
         correct_data(last_week)
-        save_pm25_csv(last_day, sensor_name=sensor_name, prefix="24h_")
-        save_pm25_csv(last_week, sensor_name=sensor_name, prefix="7d_")
-    logger.debug(f"{'-' * 15} SUCCESS {'-' * 15}")
-
-
-if __name__ == "__main__":
-    try:
-        main()
-    except:
-        logger.error("uncaught exception: %s", traceback.format_exc())
+        save_pm25_csv(last_day, dir=dir, sensor_name=sensor_name, prefix="24h_")
+        save_pm25_csv(last_week, dir=dir, sensor_name=sensor_name, prefix="7d_")
+    logger.info(f"Download successful")
