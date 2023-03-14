@@ -138,4 +138,4 @@ def download_qc_data(dir="data"):
         correct_data(last_week)
         save_pm25_csv(last_day, dir=dir, sensor_name=sensor_name, prefix="24h_")
         save_pm25_csv(last_week, dir=dir, sensor_name=sensor_name, prefix="7d_")
-    logger.info(f"Downloaded successful for {len(sensors)} sensors")
+    logger.info(f"Downloaded data for {len(sensors)} sensors")

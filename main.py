@@ -19,7 +19,7 @@ def main():
     download_qc_data(dir="site-data")
     local_files = glob.glob("site-data/*/*.csv")
     ftp_upload_files(local_files)
-    logger.debug(f"{'-' * 15} SUCCESS {'-' * 15}")
+    logger.info(f"{'-' * 15} SUCCESS {'-' * 15}")
 
 
 if __name__ == "__main__":
