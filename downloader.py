@@ -118,7 +118,7 @@ def save_pm25_csv(df, dir="data", sensor_name="", prefix=""):
     mkdir_if_not_exists(os.path.dirname(fpath))
     df = df.filter(["pm2.5"])
     df.to_csv(fpath)
-    logger.info(f"Wrote {len(df)} records to: {fpath}")
+    logger.debug(f"Wrote {len(df)} records to: {fpath}")
 
 
 def download_qc_data(dir="data"):
@@ -138,4 +138,4 @@ def download_qc_data(dir="data"):
         correct_data(last_week)
         save_pm25_csv(last_day, dir=dir, sensor_name=sensor_name, prefix="24h_")
         save_pm25_csv(last_week, dir=dir, sensor_name=sensor_name, prefix="7d_")
-    logger.info(f"Download successful")
+    logger.info(f"Downloaded successful for {len(sensors)} sensors")
