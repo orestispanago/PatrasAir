@@ -44,7 +44,7 @@ def download_historical(sensor_id, start="", end="", average_minutes=0):
         )
     data = StringIO(resp.text)
     df = pd.read_csv(data, parse_dates=True, index_col="time_stamp")
-    logger.info(
+    logger.debug(
         f"Retrieved {len(df)} records for sensor id: {sensor_id}, average: {average_minutes} minutes"
     )
     df.sort_index(inplace=True)

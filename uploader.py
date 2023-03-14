@@ -25,7 +25,7 @@ def ftp_make_dirs(ftp_session, folder_path):
 def ftp_upload_file(ftp_session, local_path, remote_path):
     with open(local_path, "rb") as f:
         ftp_session.storbinary(f"STOR {remote_path}", f)
-    logger.info(f"Uploaded {local_path} to {remote_path} at FTP")
+    logger.debug(f"Uploaded {local_path} to {remote_path} at FTP")
 
 
 def ftp_upload_files(local_files):
@@ -39,3 +39,4 @@ def ftp_upload_files(local_files):
                     ftp_make_dirs(ftp, os.path.dirname(local_file))
                     ftp.cwd(FTP_DIR)
                     ftp_upload_file(ftp, local_file, local_file)
+    logger.info(f"Uploaded {len(local_files)} files to FTP")
