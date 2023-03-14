@@ -1,6 +1,6 @@
 
 *.log
 
-data/
+site-data/
 
 __pycache__/

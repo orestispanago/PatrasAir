@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    download_qc_data(dir="data")
-    local_files = glob.glob("data/*/*.csv")
+    download_qc_data(dir="site-data")
+    local_files = glob.glob("site-data/*/*.csv")
     ftp_upload_files(local_files)
     logger.debug(f"{'-' * 15} SUCCESS {'-' * 15}")
 
