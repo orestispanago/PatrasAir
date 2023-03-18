@@ -1,43 +1,55 @@
-import locale
-import os
 import glob
+import locale
+import logging
+import os
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
 
-locale.setlocale(locale.LC_ALL, "el_GR.utf8")
+from utils import STATION_NAMES_GR, mkdir_if_not_exists
 
+logger = logging.getLogger(__name__)
+
+LARGE_FONT = 28
+MEDIUM_FONT = 14
+
+LIGHT_BLUE = "#43dbff"
+GREEN = "#96cd4f"
+YELLOW = "#ffff00"
+RED = "#fc3903"
+DARK_RED = "#990100"
 
 def get_station_name(file):
     base_name = os.path.basename(file)[:-4]
-    time_range, station_name = base_name.split("_")
-    return station_name
+    time_range, name = base_name.split("_")
+    return name
 
 
 def yaxis_color_aqi(ax):
     ymin, ymax = ax.get_ylim()
     ax.margins(y=0)
-    if ymax >= 50: 
-        ax.axhspan(0, 10, color="#43dbff")
-        ax.axhspan(10, 20, color="#96cd4f")
-        ax.axhspan(20, 25, color="#ffff00")
-        ax.axhspan(25, 50, color="#fc3903")
-        ax.axhspan(50, ymax, color="#990100")
+    if ymax >= 50:
+        ax.axhspan(0, 10, color=LIGHT_BLUE)
+        ax.axhspan(10, 20, color=GREEN)
+        ax.axhspan(20, 25, color=YELLOW)
+        ax.axhspan(25, 50, color=RED)
+        ax.axhspan(50, ymax, color=DARK_RED)
     elif 25 <= ymax < 50:
-        ax.axhspan(0, 10, color="#43dbff")
-        ax.axhspan(10, 20, color="#96cd4f")
-        ax.axhspan(20, 25, color="#ffff00")
-        ax.axhspan(25, 50, color="#fc3903")
-    elif 20 <= ymax < 25: 
-        ax.axhspan(0, 10, color="#43dbff")
-        ax.axhspan(10, 20, color="#96cd4f")
-        ax.axhspan(20, 25, color="#ffff00")
+        ax.axhspan(0, 10, color=LIGHT_BLUE)
+        ax.axhspan(10, 20, color=GREEN)
+        ax.axhspan(20, 25, color=YELLOW)
+        ax.axhspan(25, 50, color=RED)
+    elif 20 <= ymax < 25:
+        ax.axhspan(0, 10, color=LIGHT_BLUE)
+        ax.axhspan(10, 20, color=GREEN)
+        ax.axhspan(20, 25, color=YELLOW)
     elif 10 <= ymax < 20:
-        ax.axhspan(0, 10, color="#43dbff")
-        ax.axhspan(10, 20, color="#96cd4f")
+        ax.axhspan(0, 10, color=LIGHT_BLUE)
+        ax.axhspan(10, 20, color=GREEN)
     elif 0 <= ymax < 10:
-        ax.axhspan(0, 10, color="#43dbff")
+        ax.axhspan(0, 10, color=LIGHT_BLUE)
+
 
 def format_date(df, ax):
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%d %b"))
@@ -55,44 +67,48 @@ def add_logos(ax, station_name="station A", img_path="lapup_aether_logo.png"):
     pic = plt.imread(img_path)
     ax.imshow(pic)
     ax.text(
-    500,
-    -200,
-    station_name,
-    fontsize=14,
-    weight="bold",
-    ha="center",
-    va="center",
+        500,
+        -200,
+        station_name,
+        fontsize=MEDIUM_FONT,
+        weight="bold",
+        ha="center",
+        va="center",
     )
     ax.axis("off")
 
 
+
 def pm_to_aqi_color(pm_value):
     if type(pm_value) is str:
-        return "#43dbff"
+        return LIGHT_BLUE
     if pm_value < 10:
-        return "#43dbff"
+        return LIGHT_BLUE
     elif pm_value >= 10 and pm_value < 20:
-        return "#96cd4f"
+        return GREEN
     elif pm_value >= 20 and pm_value < 25:
-        return "#ffff00"
+        return YELLOW
     elif pm_value >= 25 and pm_value < 50:
-        return "#fc3903"
+        return RED
     elif pm_value >= 50:
-        return "#990100"
+        return DARK_RED
 
+
+def show_no_data(ax):
+    ax.text(
+        0.5,
+        0.5,
+        "No Data",
+        fontsize=LARGE_FONT,
+        weight="bold",
+        ha="center",
+        va="center",
+    )
+    ax.axis("off")
 
 def add_last_value(df, ax):
     if df.count().values[0] == 0:
-        ax.text(
-            0.5,
-            0.5,
-            "No Data",
-            fontsize=28,
-            weight="bold",
-            ha="center",
-            va="center",
-        )
-        ax.axis("off")
+        show_no_data(ax)
     else:
         last_dt = df.notna()[::-1].idxmax()
         last_pm_measurement = df.loc[last_dt]
@@ -107,7 +123,7 @@ def add_last_value(df, ax):
             0.5,
             0.5,
             center_text,
-            fontsize=28,
+            fontsize=LARGE_FONT,
             weight="bold",
             ha="center",
             va="center",
@@ -116,7 +132,7 @@ def add_last_value(df, ax):
             0.5,
             0.9,
             last_dt_fmt,
-            fontsize=12,
+            fontsize=MEDIUM_FONT,
             weight="bold",
             ha="center",
             va="center",
@@ -127,43 +143,33 @@ def add_last_value(df, ax):
         ax.set_yticks([])
 
 
-
 def plot_timeseries(df, ax):
     if df.count().values[0] <= 1:
-        ax.text(
-            0.5,
-            0.5,
-            "No Data",
-            fontsize=28,
-            weight="bold",
-            ha="center",
-            va="center",
-        )
-        ax.axis("off")
+        show_no_data(ax)
     else:
-        ax.plot(df.index, df["pm2.5"], color="black")
+        ax.plot(df.index, df["pm2.5"], color="black", linewidth=2, markersize=2)
         yaxis_color_aqi(ax)
         format_date(df, ax)
 
 
-def plot_all(df_7d, df_24h, station_name="station_a"):
-    fig, axes = plt.subplots(
-        2, 2, figsize=(10, 7), gridspec_kw={"width_ratios": [1, 2]}
+def plot_station(df_7d, df_24h, name="station_a", folder="plots"):
+    fig, axes = plt.subplots(2, 2, figsize=(10, 7), 
+                             gridspec_kw={"width_ratios": [1, 2]}
     )
     ax_top_left = axes[0][0]
     ax_top_right = axes[0][1]
     ax_lower_left = axes[1][0]
     ax_lower_right = axes[1][1]
 
-    plot_timeseries(df_7d, ax_top_right)
-    plot_timeseries(df_24h, ax_lower_right)
-    add_logos(ax_lower_left, station_name=station_name)
+    plot_timeseries(df_24h, ax_top_right)
+    plot_timeseries(df_7d, ax_lower_right)
+    add_logos(ax_lower_left, station_name=STATION_NAMES_GR.get(name))
     add_last_value(df_24h, ax_top_left)
-    # fig.subplots_adjust(hspace=0.3)
-    # plt.savefig(f"img/{station_name}.png")
-    plt.show()
-
-
+    fig.subplots_adjust(hspace=0.3)
+    mkdir_if_not_exists(folder)
+    plt.savefig(f"{folder}/{name}.png")
+    # plt.show()
+    logger.debug(f"Plotted {name} ")
 
 
 def read_file(fname):
@@ -171,16 +177,19 @@ def read_file(fname):
     try:
         df.index = df.index.tz_convert("Europe/Athens")
     except AttributeError:
-        print("EMPTY DATAFRAME")
+        logger.debug(f"Empty file: {fname}")
     return df
-# file_24h = "site-data/Kastelokampos/24h_Kastelokampos.csv"
-# file_7d = "site-data/Kastelokampos/7d_Kastelokampos.csv"
-files_24h = glob.glob("*/*/24h*.csv")
-files_7d = glob.glob("*/*/7d*.csv")
 
-for file_24h, file_7d in zip(files_24h, files_7d):
-    print(file_24h, file_7d)
-    df_24h = read_file(file_24h)
-    station_name = get_station_name(file_24h)
-    df_7d = read_file(file_7d)
-    plot_all(df_7d, df_24h, station_name=station_name)
+
+def plot_stations(folder="plots"):
+    locale.setlocale(locale.LC_ALL, "el_GR.utf8")
+    logger.debug(f"Set locale: {locale.getlocale(locale.LC_ALL)}")
+
+    files_24h = glob.glob("*/*/24h*.csv")
+    files_7d = glob.glob("*/*/7d*.csv")
+    for file_24h, file_7d in zip(files_24h, files_7d):
+        df_24h = read_file(file_24h)
+        name = get_station_name(file_24h)
+        df_7d = read_file(file_7d)
+        plot_station(df_7d, df_24h, name=name, folder=folder)
+    logger.info(f"Plotted {len(files_24h)} stations")

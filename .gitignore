@@ -6,3 +6,5 @@ site-data/
 __pycache__/
 
 img/
+
+plots/

@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 import requests
 
+from utils import mkdir_if_not_exists
+
 logger = logging.getLogger(__name__)
 
 READ_KEY = ""
@@ -36,6 +38,15 @@ def download_historical(sensor_id, start="", end="", average_minutes=0):
     )
     resp = requests.get(url, headers={"x-api-key": READ_KEY})
     logger.debug(f"Sensor ID: {sensor_id}, Response status: {resp.status_code}")
+    if resp.status_code == 429:
+        logger.warning(
+            f"Response status 429 for sensor ID: {sensor_id}\n"
+            f"Response status: {resp.status_code}\n"
+            f"Response text: \n {resp.text}"
+            f"Retrying..."
+        )
+        resp = requests.get(url, headers={"x-api-key": READ_KEY})
+        logger.debug(f"Sensor ID: {sensor_id}, Response status: {resp.status_code}")
     if resp.status_code != 200:
         logger.error(
             f"Response status not 200 for sensor ID: {sensor_id}\n"
@@ -105,12 +116,6 @@ def correct_data(df):
     quality_control(df)
     apply_calibration_factor(df)
     calc_pm25(df)
-
-
-def mkdir_if_not_exists(dir_path):
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
-        logger.debug(f"Created local directory {dir_path}")
 
 
 def save_pm25_csv(df, dir="data", sensor_name="", prefix=""):
