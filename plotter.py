@@ -20,6 +20,7 @@ YELLOW = "#ffff00"
 RED = "#fc3903"
 DARK_RED = "#990100"
 
+
 def get_station_name(file):
     base_name = os.path.basename(file)[:-4]
     time_range, name = base_name.split("_")
@@ -63,7 +64,9 @@ def format_date(df, ax):
         sec_xaxis.tick_params(bottom=False)
 
 
-def add_logos(ax, station_name="station A", img_path="lapup_aether_logo.png"):
+def add_logos(
+    ax, station_name="station A", img_path="img/lapup_aether_logos.png"
+):
     pic = plt.imread(img_path)
     ax.imshow(pic)
     ax.text(
@@ -78,17 +81,16 @@ def add_logos(ax, station_name="station A", img_path="lapup_aether_logo.png"):
     ax.axis("off")
 
 
-
 def pm_to_aqi_color(pm_value):
     if type(pm_value) is str:
         return LIGHT_BLUE
     if pm_value < 10:
         return LIGHT_BLUE
-    elif pm_value >= 10 and pm_value < 20:
+    elif 10 <= pm_value < 20:
         return GREEN
-    elif pm_value >= 20 and pm_value < 25:
+    elif 20 <= pm_value < 25:
         return YELLOW
-    elif pm_value >= 25 and pm_value < 50:
+    elif 25 <= pm_value < 50:
         return RED
     elif pm_value >= 50:
         return DARK_RED
@@ -105,6 +107,7 @@ def show_no_data(ax):
         va="center",
     )
     ax.axis("off")
+
 
 def add_last_value(df, ax):
     if df.count().values[0] == 0:
@@ -153,8 +156,8 @@ def plot_timeseries(df, ax):
 
 
 def plot_station(df_7d, df_24h, name="station_a", folder="plots"):
-    fig, axes = plt.subplots(2, 2, figsize=(10, 7), 
-                             gridspec_kw={"width_ratios": [1, 2]}
+    fig, axes = plt.subplots(
+        2, 2, figsize=(10, 7), gridspec_kw={"width_ratios": [1, 2]}
     )
     ax_top_left = axes[0][0]
     ax_top_right = axes[0][1]
@@ -168,6 +171,7 @@ def plot_station(df_7d, df_24h, name="station_a", folder="plots"):
     fig.subplots_adjust(hspace=0.3)
     mkdir_if_not_exists(folder)
     plt.savefig(f"{folder}/{name}.png")
+    plt.close()
     # plt.show()
     logger.debug(f"Plotted {name} ")
 

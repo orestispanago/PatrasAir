@@ -8,16 +8,15 @@ import numpy as np
 import pandas as pd
 import requests
 
+from config import READ_KEY
 from utils import mkdir_if_not_exists
 
 logger = logging.getLogger(__name__)
 
-READ_KEY = ""
-SENSORS_FILE = "sensors.csv"
-DATETIME_FORMAT = "%Y-%m-%dT%XZ"
 
-
-def download_historical(sensor_id, start="", end="", average_minutes=0):
+def download_historical(
+    sensor_id, read_key="", start="", end="", average_minutes=0
+):
     url = (
         f"https://api.purpleair.com/v1/sensors/{sensor_id}/history/csv?"
         f"start_timestamp={start}&"
@@ -36,7 +35,7 @@ def download_historical(sensor_id, start="", end="", average_minutes=0):
         f"pm10.0_atm_a,"
         f"pm10.0_atm_b,"
     )
-    resp = requests.get(url, headers={"x-api-key": READ_KEY})
+    resp = requests.get(url, headers={"x-api-key": read_key})
     logger.debug(f"Sensor ID: {sensor_id}, Response status: {resp.status_code}")
     if resp.status_code == 429:
         logger.warning(
@@ -45,8 +44,10 @@ def download_historical(sensor_id, start="", end="", average_minutes=0):
             f"Response text: \n {resp.text}"
             f"Retrying..."
         )
-        resp = requests.get(url, headers={"x-api-key": READ_KEY})
-        logger.debug(f"Sensor ID: {sensor_id}, Response status: {resp.status_code}")
+        resp = requests.get(url, headers={"x-api-key": read_key})
+        logger.debug(
+            f"Sensor ID: {sensor_id}, Response status: {resp.status_code}"
+        )
     if resp.status_code != 200:
         logger.error(
             f"Response status not 200 for sensor ID: {sensor_id}\n"
@@ -118,7 +119,7 @@ def correct_data(df):
     calc_pm25(df)
 
 
-def save_pm25_csv(df, dir="data", sensor_name="", prefix=""):
+def save_pm25_csv(df, dir="data", sensor_name="station a", prefix="prefix_"):
     fpath = f"{dir}/{sensor_name}/{prefix}{sensor_name}.csv"
     mkdir_if_not_exists(os.path.dirname(fpath))
     df = df.filter(["pm2.5"])
@@ -126,21 +127,28 @@ def save_pm25_csv(df, dir="data", sensor_name="", prefix=""):
     logger.debug(f"Wrote {len(df)} records to: {fpath}")
 
 
-def download_qc_data(dir="data"):
-    sensors = pd.read_csv(SENSORS_FILE)
+def download_qc_data(sensors_csv="sensors.csv", read_key=READ_KEY, dir="data"):
+    sensors = pd.read_csv(sensors_csv)
     utc_now = pd.to_datetime(datetime.utcnow(), utc=True)
-    yesterday = (utc_now - timedelta(days=1)).strftime(DATETIME_FORMAT)
-    a_week_ago = (utc_now - timedelta(days=7)).strftime(DATETIME_FORMAT)
-    end_date = utc_now.strftime(DATETIME_FORMAT)
+    datetime_format = "%Y-%m-%dT%XZ"
+    yesterday = (utc_now - timedelta(days=1)).strftime(datetime_format)
+    a_week_ago = (utc_now - timedelta(days=7)).strftime(datetime_format)
+    now = utc_now.strftime(datetime_format)
     for index, row in sensors.iterrows():
         sensor_id = row["sensor_index"]
         sensor_name = row["name"]
-        last_day = download_historical(sensor_id, start=yesterday, end=end_date)
+        last_day = download_historical(
+            sensor_id, start=yesterday, end=now, read_key=read_key
+        )
         last_week = download_historical(
-            sensor_id, start=a_week_ago, end=end_date, average_minutes=60
+            sensor_id,
+            start=a_week_ago,
+            end=now,
+            average_minutes=60,
+            read_key=read_key,
         )
         correct_data(last_day)
         correct_data(last_week)
-        save_pm25_csv(last_day, dir=dir, sensor_name=sensor_name, prefix="24h_")
-        save_pm25_csv(last_week, dir=dir, sensor_name=sensor_name, prefix="7d_")
+        save_pm25_csv(last_day, prefix="24h_", dir=dir, sensor_name=sensor_name)
+        save_pm25_csv(last_week, prefix="7d_", dir=dir, sensor_name=sensor_name)
     logger.info(f"Downloaded data for {len(sensors)} sensors")

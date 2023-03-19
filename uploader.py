@@ -2,12 +2,9 @@ import logging
 import os
 from ftplib import FTP, error_perm
 
-logger = logging.getLogger(__name__)
+from config import FTP_DIR, FTP_IP, FTP_PASSWORD, FTP_USER
 
-FTP_IP = ""
-FTP_USER = ""
-FTP_PASSWORD = ""
-FTP_DIR = "/dataloggers/test"
+logger = logging.getLogger(__name__)
 
 
 def ftp_mkdir_and_enter(ftp_session, dir_name):

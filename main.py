@@ -5,8 +5,8 @@ import os
 import traceback
 
 from downloader import download_qc_data
-from uploader import ftp_upload_files
 from plotter import plot_stations
+from uploader import ftp_upload_files
 
 dname = os.path.dirname(__file__)
 os.chdir(dname)
@@ -20,12 +20,11 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    download_qc_data(dir="site-data")
-    # local_files = glob.glob("site-data/*/*.csv")
+    download_qc_data(dir="data")
+    # local_files = glob.glob("data/*/*.csv")
     # ftp_upload_files(local_files)
     plot_stations(folder="plots")
     logger.info(f"{'-' * 15} SUCCESS {'-' * 15}")
-    
 
 
 if __name__ == "__main__":
