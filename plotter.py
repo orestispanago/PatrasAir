@@ -1,7 +1,5 @@
-import glob
 import locale
 import logging
-import os
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -19,12 +17,6 @@ GREEN = "#96cd4f"
 YELLOW = "#ffff00"
 RED = "#fc3903"
 DARK_RED = "#990100"
-
-
-def get_station_name(file):
-    base_name = os.path.basename(file)[:-4]
-    time_range, name = base_name.split("_")
-    return name
 
 
 def yaxis_color_aqi(ax):
@@ -65,14 +57,14 @@ def format_date(df, ax):
 
 
 def add_logos(
-    ax, station_name="station A", img_path="img/lapup_aether_logos.png"
+    ax, sensor_name="sensor_a", img_path="img/lapup_aether_logos.png"
 ):
     pic = plt.imread(img_path)
     ax.imshow(pic)
     ax.text(
         500,
         -200,
-        station_name,
+        sensor_name,
         fontsize=MEDIUM_FONT,
         weight="bold",
         ha="center",
@@ -82,8 +74,8 @@ def add_logos(
 
 
 def pm_to_aqi_color(pm_value):
-    if type(pm_value) is str:
-        return LIGHT_BLUE
+    # if type(pm_value) is str:
+    #     return LIGHT_BLUE
     if pm_value < 10:
         return LIGHT_BLUE
     elif 10 <= pm_value < 20:
@@ -109,17 +101,12 @@ def show_no_data(ax):
     ax.axis("off")
 
 
-def add_last_value(df, ax):
-    if df.count().values[0] == 0:
+def add_last_value(last_dt, last_value, ax):
+    if not last_value:
         show_no_data(ax)
     else:
-        last_dt = df.notna()[::-1].idxmax()
-        last_pm_measurement = df.loc[last_dt]
-        try:
-            last_pm_value = int(last_pm_measurement["pm2.5"])
-        except ValueError as e:
-            last_pm_value = "No Data"
-        last_dt_fmt = last_dt["pm2.5"].strftime("%d %b %H:%M")
+        last_pm_value = int(last_value)
+        last_dt_fmt = last_dt.strftime("%d %b %H:%M")
         ax.set_facecolor(pm_to_aqi_color(last_pm_value))
         center_text = f"{last_pm_value} $\mu g/m^3$"
         ax.text(
@@ -155,7 +142,14 @@ def plot_timeseries(df, ax):
         format_date(df, ax)
 
 
-def plot_station(df_7d, df_24h, name="station_a", folder="plots"):
+def plot_sensor_timeseries(
+    df_7d,
+    df_24h,
+    name="sensor_a",
+    folder="plots",
+    last_dt=None,
+    last_value=None,
+):
     fig, axes = plt.subplots(
         2, 2, figsize=(10, 7), gridspec_kw={"width_ratios": [1, 2]}
     )
@@ -166,34 +160,25 @@ def plot_station(df_7d, df_24h, name="station_a", folder="plots"):
 
     plot_timeseries(df_24h, ax_top_right)
     plot_timeseries(df_7d, ax_lower_right)
-    add_logos(ax_lower_left, station_name=STATION_NAMES_GR.get(name))
-    add_last_value(df_24h, ax_top_left)
+    add_logos(ax_lower_left, sensor_name=STATION_NAMES_GR.get(name))
+    add_last_value(last_dt, last_value, ax_top_left)
     fig.subplots_adjust(hspace=0.3)
     mkdir_if_not_exists(folder)
     plt.savefig(f"{folder}/{name}.png")
     plt.close()
-    # plt.show()
     logger.debug(f"Plotted {name} ")
 
 
-def read_file(fname):
-    df = pd.read_csv(fname, parse_dates=True, index_col="time_stamp")
-    try:
-        df.index = df.index.tz_convert("Europe/Athens")
-    except AttributeError:
-        logger.debug(f"Empty file: {fname}")
-    return df
-
-
-def plot_stations(folder="plots"):
+def plot_sensors_timeseries(sensors, folder="plots"):
     locale.setlocale(locale.LC_ALL, "el_GR.utf8")
     logger.debug(f"Set locale: {locale.getlocale(locale.LC_ALL)}")
-
-    files_24h = glob.glob("*/*/24h*.csv")
-    files_7d = glob.glob("*/*/7d*.csv")
-    for file_24h, file_7d in zip(files_24h, files_7d):
-        df_24h = read_file(file_24h)
-        name = get_station_name(file_24h)
-        df_7d = read_file(file_7d)
-        plot_station(df_7d, df_24h, name=name, folder=folder)
-    logger.info(f"Plotted {len(files_24h)} stations")
+    for sensor in sensors:
+        plot_sensor_timeseries(
+            sensor.data_7d,
+            sensor.data_24h,
+            name=sensor.name,
+            folder=folder,
+            last_dt=sensor.last_dt,
+            last_value=sensor.last_value,
+        )
+    logger.info(f"Plotted {len(sensors)} sensors timeseries")

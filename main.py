@@ -5,7 +5,9 @@ import os
 import traceback
 
 from downloader import download_qc_data
-from plotter import plot_stations
+from map import plot_scatter_map
+from plotter import plot_sensors_timeseries
+from sensors import get_sensors
 from uploader import ftp_upload_files
 
 dname = os.path.dirname(__file__)
@@ -20,10 +22,13 @@ logger = logging.getLogger(__name__)
 
 
 def main():
+    logger.info(f"{'-' * 15} START {'-' * 15}")
     download_qc_data(dir="data")
     # local_files = glob.glob("data/*/*.csv")
     # ftp_upload_files(local_files)
-    plot_stations(folder="plots")
+    sensors = get_sensors("sensors.csv")
+    plot_sensors_timeseries(sensors, folder="plots")
+    plot_scatter_map(sensors, fname="plots/map.png")
     logger.info(f"{'-' * 15} SUCCESS {'-' * 15}")
 
 
