@@ -137,7 +137,14 @@ def plot_timeseries(df, ax):
     if df.count().values[0] <= 1:
         show_no_data(ax)
     else:
-        ax.plot(df.index, df["pm2.5"], color="black", linewidth=2, markersize=2)
+        ax.plot(
+            df.index,
+            df["pm2.5"],
+            ".-",
+            color="black",
+            linewidth=2,
+            markersize=2,
+        )
         yaxis_color_aqi(ax)
         format_date(df, ax)
 

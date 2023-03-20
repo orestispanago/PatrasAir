@@ -49,7 +49,7 @@ def scatter_map(
     plt.gca().invert_yaxis()  # Origin of map is upper left
     plt.axis([0, width, width, 0])  # Remove margin
     plt.axis("off")
-    # plt.tight_layout()
+    plt.tight_layout()
     plt.savefig(fname)
     logger.info(f"Plotted {len(values)} points on map")
 
