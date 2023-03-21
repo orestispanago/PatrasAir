@@ -1,6 +1,10 @@
 import json
+import os
 
-with open("config.json", "r", encoding="utf8") as f:
+dname = os.path.dirname(os.path.abspath(__file__))
+config_file = os.path.join(dname, "config.json")
+
+with open(config_file, "r", encoding="utf8") as f:
     configs = json.load(f)
 
 READ_KEY = configs.get("READ_KEY")

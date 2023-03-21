@@ -24,11 +24,11 @@ logger = logging.getLogger(__name__)
 def main():
     logger.info(f"{'-' * 15} START {'-' * 15}")
     download_qc_data(dir="data")
-    # local_files = glob.glob("data/*/*.csv")
-    # ftp_upload_files(local_files)
     sensors = get_sensors("sensors.csv")
     plot_sensors_timeseries(sensors, folder="plots")
     plot_scatter_map(sensors, fname="plots/map.png")
+    local_files = glob.glob("plots/*.png")
+    ftp_upload_files(local_files)
     logger.info(f"{'-' * 15} SUCCESS {'-' * 15}")
 
 
