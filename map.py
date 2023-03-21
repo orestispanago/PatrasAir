@@ -5,10 +5,42 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from mapsplotlib import mapsplot as mplt
+from mapsplotlib.google_static_maps_api import GoogleStaticMapsAPI
 
 from plotter import pm_to_aqi_color
 
 logger = logging.getLogger(__name__)
+
+
+def get_background(center_lat, center_lon, zoom, scale, max_size, api_key=None):
+    map_data = "map_background.pkl"
+    if api_key:
+        mplt.register_api_key(api_key)
+        img = GoogleStaticMapsAPI.map(
+            center=(center_lat, center_lon),
+            zoom=zoom,
+            scale=scale,
+            size=(max_size, max_size),
+            maptype="roadmap",
+        )
+        with open(map_data, "wb") as f:
+            pickle.dump(img, f)
+        logger.debug(f"Saved map background in {map_data}")
+        return img
+    logger.debug(f"Using local map data: {map_data}")
+    with open(map_data, "rb") as f:
+        img = pickle.load(f)
+    return img
+
+
+def calc_map_params(lats, lons):
+    scale = 2
+    max_size = 640  # Max size of the map in pixels
+    width = scale * max_size
+    center_lat = (lats.max() + lats.min()) / 2
+    center_lon = (lons.max() + lons.min()) / 2
+    zoom = GoogleStaticMapsAPI.get_zoom(lats, lons, max_size, scale)
+    return scale, max_size, width, center_lat, center_lon, zoom
 
 
 def scatter_map(
@@ -16,38 +48,30 @@ def scatter_map(
     lons,
     values=None,
     colors=None,
-    maptype="roadmap",
     alpha=0.5,
     fname="map.png",
     api_key=None,
 ):
-    scale = 2
-    max_size = 640  # Max size of the map in pixels
-    width = scale * max_size
-    colors = pd.Series(0, index=lats.index) if colors is None else colors
-    map_data = "map_data.pkl"
-    if api_key:
-        logger.debug("Using Google Maps API key")
-        mplt.register_api_key(api_key)
-        img, pixels = mplt.background_and_pixels(lats, lons, max_size, maptype)
-        with open(map_data, "wb") as f:
-            pickle.dump([img, pixels], f)
-            logger.debug("Saved map image and sensors pixels in {map_data}")
-    else:
-        with open(map_data, "rb") as f:
-            img, pixels = pickle.load(f)
-        logger.debug(f"Using local map data: {map_data}")
+    scale, max_size, width, center_lat, center_lon, zoom = calc_map_params(
+        lats, lons
+    )
+    img = get_background(
+        center_lat, center_lon, zoom, scale, max_size, api_key=api_key
+    )
+    sensor_pixels = GoogleStaticMapsAPI.to_tile_coordinates(
+        lats, lons, center_lat, center_lon, zoom, max_size, scale
+    )
     plt.figure(figsize=(10, 10))
     plt.imshow(np.array(img))  # Background map
     plt.scatter(
-        pixels["x_pixel"],
-        pixels["y_pixel"],
+        sensor_pixels["x_pixel"],
+        sensor_pixels["y_pixel"],
         c=colors,
         s=width / 4,
         linewidth=0,
         alpha=alpha,
     )
-    for index, row in pixels.iterrows():
+    for index, row in sensor_pixels.iterrows():
         plt.text(
             row["x_pixel"],
             row["y_pixel"],
