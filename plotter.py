@@ -142,8 +142,8 @@ def plot_timeseries(df, ax):
             df["pm2.5"],
             ".-",
             color="black",
-            linewidth=2,
-            markersize=2,
+            linewidth=1,
+            markersize=0.5,
         )
         yaxis_color_aqi(ax)
         format_date(df, ax)

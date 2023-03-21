@@ -1,16 +1,14 @@
 import logging
+import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from mapsplotlib import mapsplot as mplt
 
-from config import GOOGLE_MAPS_API_KEY
 from plotter import pm_to_aqi_color
 
 logger = logging.getLogger(__name__)
-
-mplt.register_api_key(GOOGLE_MAPS_API_KEY)
 
 
 def scatter_map(
@@ -21,12 +19,24 @@ def scatter_map(
     maptype="roadmap",
     alpha=0.5,
     fname="map.png",
+    api_key=None,
 ):
     scale = 2
     max_size = 640  # Max size of the map in pixels
     width = scale * max_size
     colors = pd.Series(0, index=lats.index) if colors is None else colors
-    img, pixels = mplt.background_and_pixels(lats, lons, max_size, maptype)
+    map_data = "map_data.pkl"
+    if api_key:
+        logger.debug("Using Google Maps API key")
+        mplt.register_api_key(api_key)
+        img, pixels = mplt.background_and_pixels(lats, lons, max_size, maptype)
+        with open(map_data, "wb") as f:
+            pickle.dump([img, pixels], f)
+            logger.debug("Saved map image and sensors pixels in {map_data}")
+    else:
+        with open(map_data, "rb") as f:
+            img, pixels = pickle.load(f)
+        logger.debug(f"Using local map data: {map_data}")
     plt.figure(figsize=(10, 10))
     plt.imshow(np.array(img))  # Background map
     plt.scatter(
@@ -63,7 +73,7 @@ def prepare_map_data(sensors):
     return df
 
 
-def plot_scatter_map(sensors, fname="map.png"):
+def plot_scatter_map(sensors, fname="map.png", api_key=None):
     df = prepare_map_data(sensors)
     scatter_map(
         df["lat"],
@@ -72,4 +82,5 @@ def plot_scatter_map(sensors, fname="map.png"):
         colors=df["color"],
         alpha=1,
         fname=fname,
+        api_key=api_key,
     )
