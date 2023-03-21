@@ -5,7 +5,8 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from utils import STATION_NAMES_GR, mkdir_if_not_exists
+from sensors import SENSOR_NAMES_GR
+from utils import mkdir_if_not_exists
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +57,7 @@ def format_date(df, ax):
         sec_xaxis.tick_params(bottom=False)
 
 
-def add_logos(
-    ax, sensor_name="sensor_a", img_path="img/lapup_aether_logos.png"
-):
+def add_logos(ax, sensor_name="sensor_a", img_path="lapup_aether_logos.png"):
     pic = plt.imread(img_path)
     ax.imshow(pic)
     ax.text(
@@ -167,7 +166,7 @@ def plot_sensor_timeseries(
 
     plot_timeseries(df_24h, ax_top_right)
     plot_timeseries(df_7d, ax_lower_right)
-    add_logos(ax_lower_left, sensor_name=STATION_NAMES_GR.get(name))
+    add_logos(ax_lower_left, sensor_name=SENSOR_NAMES_GR.get(name))
     add_last_value(last_dt, last_value, ax_top_left)
     fig.subplots_adjust(hspace=0.3)
     mkdir_if_not_exists(folder)

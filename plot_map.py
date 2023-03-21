@@ -7,13 +7,13 @@ import pandas as pd
 from mapsplotlib import mapsplot as mplt
 from mapsplotlib.google_static_maps_api import GoogleStaticMapsAPI
 
-from plotter import pm_to_aqi_color
+from plot_timeseries import pm_to_aqi_color
 
 logger = logging.getLogger(__name__)
 
 
 def get_background(center_lat, center_lon, zoom, scale, max_size, api_key=None):
-    map_data = "map_background.pkl"
+    map_background_file = "map_background.pickle"
     if api_key:
         mplt.register_api_key(api_key)
         img = GoogleStaticMapsAPI.map(
@@ -23,12 +23,12 @@ def get_background(center_lat, center_lon, zoom, scale, max_size, api_key=None):
             size=(max_size, max_size),
             maptype="roadmap",
         )
-        with open(map_data, "wb") as f:
+        with open(map_background_file, "wb") as f:
             pickle.dump(img, f)
-        logger.debug(f"Saved map background in {map_data}")
+        logger.debug(f"Saved map background in {map_background_file}")
         return img
-    logger.debug(f"Using local map data: {map_data}")
-    with open(map_data, "rb") as f:
+    logger.debug(f"Using local map data: {map_background_file}")
+    with open(map_background_file, "rb") as f:
         img = pickle.load(f)
     return img
 
