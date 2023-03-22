@@ -49,7 +49,7 @@ def scatter_map(
     values=None,
     colors=None,
     alpha=0.5,
-    fname="map.png",
+    fname="map.jpg",
     api_key=None,
 ):
     scale, max_size, width, center_lat, center_lon, zoom = calc_map_params(
@@ -61,7 +61,7 @@ def scatter_map(
     sensor_pixels = GoogleStaticMapsAPI.to_tile_coordinates(
         lats, lons, center_lat, center_lon, zoom, max_size, scale
     )
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(7.5, 7.5))
     plt.imshow(np.array(img))  # Background map
     plt.scatter(
         sensor_pixels["x_pixel"],
@@ -97,7 +97,7 @@ def prepare_map_data(sensors):
     return df
 
 
-def plot_scatter_map(sensors, fname="map.png", api_key=None):
+def plot_scatter_map(sensors, fname="map.jpg", api_key=None):
     df = prepare_map_data(sensors)
     scatter_map(
         df["lat"],

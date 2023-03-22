@@ -157,7 +157,7 @@ def plot_sensor_timeseries(
     last_value=None,
 ):
     fig, axes = plt.subplots(
-        2, 2, figsize=(10, 7), gridspec_kw={"width_ratios": [1, 2]}
+        2, 2, figsize=(10, 6), gridspec_kw={"width_ratios": [1, 2]}
     )
     ax_top_left = axes[0][0]
     ax_top_right = axes[0][1]
@@ -170,7 +170,7 @@ def plot_sensor_timeseries(
     add_last_value(last_dt, last_value, ax_top_left)
     fig.subplots_adjust(hspace=0.3)
     mkdir_if_not_exists(folder)
-    plt.savefig(f"{folder}/{name}.png")
+    plt.savefig(f"{folder}/{name}.jpg")
     plt.close()
     logger.debug(f"Plotted {name} ")
 

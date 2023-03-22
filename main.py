@@ -26,8 +26,8 @@ def main():
     download_qc_data(dir="data")
     sensors = read_sensors("sensors.csv")
     plot_sensors_timeseries(sensors, folder="plots")
-    plot_scatter_map(sensors, fname="plots/map.png")
-    local_files = glob.glob("plots/*.png")
+    plot_scatter_map(sensors, fname="plots/map.jpg")
+    local_files = glob.glob("plots/*.jpg")
     ftp_upload_files(local_files)
     logger.info(f"{'-' * 15} SUCCESS {'-' * 15}")
 
