@@ -50,7 +50,7 @@ def clean(df):
 def calc_pm25(df):
     df["pm2.5"] = df[["pm2.5_cf_1_a", "pm2.5_cf_1_b"]].mean(axis=1)
     ratio = abs(df["pm2.5_cf_1_a"] - df["pm2.5_cf_1_b"]) / df["pm2.5"]
-    df.loc[ratio > 0.2, "pm2.5"] = np.nan
+    df.loc[ratio > 0.6, "pm2.5"] = np.nan
 
 
 def quality_control(df):
