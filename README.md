@@ -9,7 +9,7 @@ Plots last 24 hours and last week timeseries.
 
 Plots last values on google map. Markers are colored according Air Quality Index.
 
-Uploads list of files to FTP server, preserving folder structure.
+Uploads list of files to FTP server.
 
 To avoid overlapping cron job execution, use flock in crontab:
 
