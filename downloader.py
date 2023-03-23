@@ -3,7 +3,6 @@ import os
 from datetime import datetime, timedelta
 from io import StringIO
 
-import numpy as np
 import pandas as pd
 import requests
 
@@ -14,8 +13,8 @@ from utils import mkdir_if_not_exists
 logger = logging.getLogger(__name__)
 
 
-def download_historical(
-    sensor_id, read_key="", start="", end="", average_minutes=0
+def get_sensor_history_csv(
+    sensor_id, start, end, average_minutes=0, read_key=READ_KEY
 ):
     url = (
         f"https://api.purpleair.com/v1/sensors/{sensor_id}/history/csv?"
@@ -37,40 +36,42 @@ def download_historical(
     )
     resp = requests.get(url, headers={"x-api-key": read_key})
     logger.debug(f"Sensor ID: {sensor_id}, Response status: {resp.status_code}")
-    if resp.status_code == 429:
-        logger.warning(
-            f"Response status 429 for sensor ID: {sensor_id}\n"
-            f"Response status: {resp.status_code}\n"
-            f"Response text: \n {resp.text}"
-            f"Retrying..."
-        )
-        resp = requests.get(url, headers={"x-api-key": read_key})
-        logger.debug(
-            f"Sensor ID: {sensor_id}, Response status: {resp.status_code}"
-        )
     if resp.status_code != 200:
-        logger.error(
+        logger.warning(
             f"Response status not 200 for sensor ID: {sensor_id}\n"
             f"Response status: {resp.status_code}\n"
             f"Response text: \n {resp.text}"
         )
+    return resp
+
+
+def read_response(resp):
     data = StringIO(resp.text)
     df = pd.read_csv(data, parse_dates=True, index_col="time_stamp")
-    logger.debug(
-        f"Retrieved {len(df)} records for sensor id: {sensor_id}, average: {average_minutes} minutes"
-    )
     df.sort_index(inplace=True)
     return df
 
 
-def save_as_csv(df, dir="data", sensor_name="station a", prefix="prefix_"):
+def save_as_csv(df, dir, sensor_name, prefix="prefix_"):
     fpath = f"{dir}/{sensor_name}/{prefix}{sensor_name}.csv"
     mkdir_if_not_exists(os.path.dirname(fpath))
     df.to_csv(fpath)
     logger.debug(f"Wrote {len(df)} records to: {fpath}")
 
 
-def download_qc_data(sensors_csv="sensors.csv", read_key=READ_KEY, dir="data"):
+def download_csv(
+    sensor_id, dir, start, end, sensor_name, prefix, average_minutes=0
+):
+    resp = get_sensor_history_csv(sensor_id, start, end, average_minutes)
+    if resp.status_code == 200:
+        df = read_response(resp)
+        quality_control(df)
+        save_as_csv(df, dir, sensor_name, prefix)
+    else:
+        logger.warning(f"Skipped download for sensor ID: {sensor_id}")
+
+
+def download_sensors_data(sensors_csv="sensors.csv", dir="data"):
     sensors = pd.read_csv(sensors_csv)
     utc_now = pd.to_datetime(datetime.utcnow(), utc=True)
     datetime_format = "%Y-%m-%dT%XZ"
@@ -80,18 +81,14 @@ def download_qc_data(sensors_csv="sensors.csv", read_key=READ_KEY, dir="data"):
     for index, row in sensors.iterrows():
         sensor_id = row["sensor_index"]
         sensor_name = row["name"]
-        last_day = download_historical(
-            sensor_id, start=yesterday, end=now, read_key=read_key
-        )
-        last_week = download_historical(
+        download_csv(sensor_id, dir, yesterday, now, sensor_name, prefix="24h_")
+        download_csv(
             sensor_id,
-            start=a_week_ago,
-            end=now,
+            dir,
+            a_week_ago,
+            now,
+            sensor_name,
             average_minutes=60,
-            read_key=read_key,
+            prefix="7d_",
         )
-        quality_control(last_day)
-        quality_control(last_week)
-        save_as_csv(last_day, prefix="24h_", dir=dir, sensor_name=sensor_name)
-        save_as_csv(last_week, prefix="7d_", dir=dir, sensor_name=sensor_name)
     logger.info(f"Downloaded data for {len(sensors)} sensors")

@@ -4,7 +4,7 @@ import logging.config
 import os
 import traceback
 
-from downloader import download_qc_data
+from downloader import download_sensors_data
 from plot_map import plot_scatter_map
 from plot_timeseries import plot_sensors_timeseries
 from sensors import read_sensors
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     logger.info(f"{'-' * 15} START {'-' * 15}")
-    download_qc_data(dir="data")
+    download_sensors_data(dir="data")
     sensors = read_sensors("sensors.csv")
     plot_sensors_timeseries(sensors, folder="plots")
     plot_scatter_map(sensors, fname="plots/map.jpg")
