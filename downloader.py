@@ -71,7 +71,7 @@ def download_csv(
         logger.warning(f"Skipped download for sensor ID: {sensor_id}")
 
 
-def download_sensors_data(sensors_csv="sensors.csv", dir="data"):
+def download_sensors_data(sensors_csv="sensors.csv", dir="data", week=True):
     sensors = pd.read_csv(sensors_csv)
     utc_now = pd.to_datetime(datetime.utcnow(), utc=True)
     datetime_format = "%Y-%m-%dT%XZ"
@@ -82,13 +82,14 @@ def download_sensors_data(sensors_csv="sensors.csv", dir="data"):
         sensor_id = row["sensor_index"]
         sensor_name = row["name"]
         download_csv(sensor_id, dir, yesterday, now, sensor_name, prefix="24h_")
-        download_csv(
-            sensor_id,
-            dir,
-            a_week_ago,
-            now,
-            sensor_name,
-            average_minutes=60,
-            prefix="7d_",
-        )
+        if week:
+            download_csv(
+                sensor_id,
+                dir,
+                a_week_ago,
+                now,
+                sensor_name,
+                average_minutes=60,
+                prefix="7d_",
+            )
     logger.info(f"Downloaded data for {len(sensors)} sensors")

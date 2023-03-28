@@ -22,14 +22,14 @@ logging.getLogger("matplotlib").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-def run_task(region, map=True, timeseries=True):
+def run_task(region, map=True, timeseries=True, week=True):
     logger.info(f"{'-' * 10} Running task for region: {region} {'-' * 10}")
     data_dir = f"data/{region}"
-    sensors_csv = f"sensors_{region}.csv"
+    sensors_csv = f"sensors/{region}.csv"
     plots_dir = f"plots/{region}"
-    basemap = f"basemap_{region}.pickle"
+    basemap = f"basemaps/{region}.pickle"
     map_name = f"{plots_dir}/map_{region}.jpg"
-    download_sensors_data(sensors_csv=sensors_csv, dir=data_dir)
+    download_sensors_data(sensors_csv=sensors_csv, dir=data_dir, week=week)
     sensors = read_sensors(sensors_csv, data_dir=data_dir)
     if timeseries:
         plot_sensors_timeseries(sensors, folder=plots_dir)
@@ -46,7 +46,7 @@ def main():
     run_task("patras")
     run_task("skyros")
     run_task("nafpaktos")
-    run_task("thermi")
+    run_task("thermi", week=False, timeseries=False)
     logger.info(f"{'-' * 15} SUCCESS {'-' * 15}")
 
 
