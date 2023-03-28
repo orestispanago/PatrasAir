@@ -3,6 +3,7 @@ import logging
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 from sensors import SENSOR_NAMES_GR
@@ -101,7 +102,7 @@ def show_no_data(ax):
 
 
 def add_last_value(last_dt, last_value, ax):
-    if not last_value:
+    if np.isnan(last_value):
         show_no_data(ax)
     else:
         last_pm_value = int(last_value)
@@ -153,8 +154,8 @@ def plot_sensor_timeseries(
     df_24h,
     name="sensor_a",
     folder="plots",
-    last_dt=None,
-    last_value=None,
+    last_dt=np.nan,
+    last_value=np.nan,
 ):
     fig, axes = plt.subplots(
         2, 2, figsize=(10, 6), gridspec_kw={"width_ratios": [1, 2]}
@@ -187,4 +188,6 @@ def plot_sensors_timeseries(sensors, folder="plots"):
             last_dt=sensor.last_dt,
             last_value=sensor.last_value,
         )
+    locale.setlocale(locale.LC_ALL, "en_GB.utf8")
+    logger.debug(f"Set locale: {locale.getlocale(locale.LC_ALL)}")
     logger.info(f"Plotted {len(sensors)} sensors timeseries")

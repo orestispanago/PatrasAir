@@ -2,6 +2,7 @@ import json
 import logging
 import os
 
+import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ def get_last_record(df):
         last_value = df.loc[last_dt].values[0]
         return last_dt, last_value
     except ValueError:
-        return None, None
+        return np.nan, np.nan
 
 
 class Sensor:

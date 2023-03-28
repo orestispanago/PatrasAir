@@ -12,8 +12,16 @@ from plot_timeseries import pm_to_aqi_color
 logger = logging.getLogger(__name__)
 
 
-def get_background(center_lat, center_lon, zoom, scale, max_size, api_key=None):
-    map_background_file = "map_background.pickle"
+def get_background(
+    center_lat,
+    center_lon,
+    zoom,
+    scale,
+    max_size,
+    basemap="basemap.pickle",
+    api_key=None,
+):
+
     if api_key:
         mplt.register_api_key(api_key)
         img = GoogleStaticMapsAPI.map(
@@ -23,12 +31,12 @@ def get_background(center_lat, center_lon, zoom, scale, max_size, api_key=None):
             size=(max_size, max_size),
             maptype="roadmap",
         )
-        with open(map_background_file, "wb") as f:
+        with open(basemap, "wb") as f:
             pickle.dump(img, f)
-        logger.debug(f"Saved map background in {map_background_file}")
+        logger.debug(f"Saved map background in {basemap}")
         return img
-    logger.debug(f"Using local map data: {map_background_file}")
-    with open(map_background_file, "rb") as f:
+    logger.debug(f"Using local map data: {basemap}")
+    with open(basemap, "rb") as f:
         img = pickle.load(f)
     return img
 
@@ -51,12 +59,19 @@ def scatter_map(
     alpha=0.5,
     fname="map.jpg",
     api_key=None,
+    basemap="basemap.pickle",
 ):
     scale, max_size, width, center_lat, center_lon, zoom = calc_map_params(
         lats, lons
     )
     img = get_background(
-        center_lat, center_lon, zoom, scale, max_size, api_key=api_key
+        center_lat,
+        center_lon,
+        zoom,
+        scale,
+        max_size,
+        api_key=api_key,
+        basemap=basemap,
     )
     sensor_pixels = GoogleStaticMapsAPI.to_tile_coordinates(
         lats, lons, center_lat, center_lon, zoom, max_size, scale
@@ -97,7 +112,9 @@ def prepare_map_data(sensors):
     return df
 
 
-def plot_scatter_map(sensors, fname="map.jpg", api_key=None):
+def plot_scatter_map(
+    sensors, fname="map.jpg", api_key=None, basemap="basemap.pickle"
+):
     df = prepare_map_data(sensors)
     scatter_map(
         df["lat"],
@@ -107,4 +124,5 @@ def plot_scatter_map(sensors, fname="map.jpg", api_key=None):
         alpha=1,
         fname=fname,
         api_key=api_key,
+        basemap=basemap,
     )
