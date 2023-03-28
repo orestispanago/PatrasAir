@@ -7,7 +7,7 @@ import pandas as pd
 from mapsplotlib import mapsplot as mplt
 from mapsplotlib.google_static_maps_api import GoogleStaticMapsAPI
 
-from plot_timeseries import pm_to_aqi_color
+from .timeseries import pm_to_aqi_color
 
 logger = logging.getLogger(__name__)
 

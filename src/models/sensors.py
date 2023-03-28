@@ -6,11 +6,6 @@ import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)
-dname = os.path.dirname(os.path.abspath(__file__))
-sensor_names_file = os.path.join(dname, "sensor_names_gr.json")
-
-with open(sensor_names_file, "r", encoding="utf8") as f:
-    SENSOR_NAMES_GR = json.load(f)
 
 
 def read_file(fname):

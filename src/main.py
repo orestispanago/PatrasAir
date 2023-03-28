@@ -5,11 +5,11 @@ import os
 import traceback
 
 from config import GOOGLE_MAPS_API_KEY
-from downloader import download_sensors_data
-from plot_map import plot_scatter_map
-from plot_timeseries import plot_sensors_timeseries
-from sensors import read_sensors
-from uploader import ftp_upload_files
+from datatasks.download import download_sensors_data
+from datatasks.upload import ftp_upload_files
+from models.sensors import read_sensors
+from plotting.map import plot_scatter_map
+from plotting.timeseries import plot_sensors_timeseries
 
 dname = os.path.dirname(__file__)
 os.chdir(dname)
@@ -24,10 +24,10 @@ logger = logging.getLogger(__name__)
 
 def run_task(region, map=True, timeseries=True):
     logger.info(f"{'-' * 10} Running task for region: {region} {'-' * 10}")
-    data_dir = f"data/{region}"
-    sensors_csv = f"sensors_{region}.csv"
-    plots_dir = f"plots/{region}"
-    basemap = f"basemap_{region}.pickle"
+    data_dir = f"../data/{region}"
+    sensors_csv = f"../sensors/{region}.csv"
+    plots_dir = f"../plots/{region}"
+    basemap = f"../basemaps/{region}.pickle"
     map_name = f"{plots_dir}/map_{region}.jpg"
     download_sensors_data(sensors_csv=sensors_csv, dir=data_dir)
     sensors = read_sensors(sensors_csv, data_dir=data_dir)
@@ -35,7 +35,7 @@ def run_task(region, map=True, timeseries=True):
         plot_sensors_timeseries(sensors, folder=plots_dir)
     if map:
         plot_scatter_map(sensors, fname=map_name, basemap=basemap)
-    local_files = glob.glob("plots/*/*.jpg")
+    local_files = glob.glob(f"{plots_dir}/*.jpg")
     # ftp_upload_files(local_files)
     logger.info(f"{'-' * 10} Finished task for region: {region} {'-' * 10}")
 

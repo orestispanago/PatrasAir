@@ -4,5 +4,5 @@
     "FTP_IP": "",
     "FTP_USER": "",
     "FTP_PASSWORD": "",
-    "FTP_DIR": "/dataloggers/purpleair"
+    "FTP_DIR": "/"
 }

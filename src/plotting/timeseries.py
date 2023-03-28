@@ -1,15 +1,23 @@
+import json
 import locale
 import logging
+import os
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from sensors import SENSOR_NAMES_GR
 from utils import mkdir_if_not_exists
 
 logger = logging.getLogger(__name__)
+
+dname = os.path.dirname(os.path.abspath(__file__))
+sensor_names_file = os.path.join(dname, "../../sensors/gr_names.json")
+with open(sensor_names_file, "r", encoding="utf8") as f:
+    SENSOR_NAMES_GR = json.load(f)
+LOGO = "../img/lapup_aether_logos.png"
+
 
 LARGE_FONT = 28
 MEDIUM_FONT = 14
@@ -58,8 +66,8 @@ def format_date(df, ax):
         sec_xaxis.tick_params(bottom=False)
 
 
-def add_logos(ax, sensor_name="sensor_a", img_path="lapup_aether_logos.png"):
-    pic = plt.imread(img_path)
+def add_logos(ax, sensor_name="sensor_a"):
+    pic = plt.imread(LOGO)
     ax.imshow(pic)
     ax.text(
         500,
@@ -74,8 +82,6 @@ def add_logos(ax, sensor_name="sensor_a", img_path="lapup_aether_logos.png"):
 
 
 def pm_to_aqi_color(pm_value):
-    # if type(pm_value) is str:
-    #     return LIGHT_BLUE
     if pm_value < 10:
         return LIGHT_BLUE
     elif 10 <= pm_value < 20:
@@ -176,7 +182,7 @@ def plot_sensor_timeseries(
     logger.debug(f"Plotted {name} ")
 
 
-def plot_sensors_timeseries(sensors, folder="plots"):
+def plot_sensors_timeseries(sensors, folder="plots", logo="logo.png"):
     locale.setlocale(locale.LC_ALL, "el_GR.utf8")
     logger.debug(f"Set locale: {locale.getlocale(locale.LC_ALL)}")
     for sensor in sensors:

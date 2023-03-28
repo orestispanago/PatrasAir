@@ -7,7 +7,7 @@ import pandas as pd
 import requests
 
 from config import READ_KEY
-from quality_control import quality_control
+from datatasks.quality_control import quality_control
 from utils import mkdir_if_not_exists
 
 logger = logging.getLogger(__name__)
