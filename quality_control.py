@@ -33,8 +33,8 @@ def apply_calibration_factor(df):
     df["pm10.0_cf_1_a"] = df["pm10.0_cf_1_a"] * 0.45 + 0.02
     df["pm10.0_cf_1_b"] = df["pm10.0_cf_1_b"] * 0.45 + 0.02
     # Correct calibrated data when pm1<0
-    df.loc[df["pm1.0_cf_1_a"] < 16, "pm1.0_cf_1_a"] = df["pm1.0_cf_1_a"] + 0.18
-    df.loc[df["pm1.0_cf_1_b"] < 16, "pm1.0_cf_1_b"] = df["pm1.0_cf_1_b"] + 0.18
+    df.loc[df["pm1.0_cf_1_a"] < 16, "pm1.0_cf_1_a"] += 0.18
+    df.loc[df["pm1.0_cf_1_b"] < 16, "pm1.0_cf_1_b"] += 0.18
 
 
 def clean(df):
