@@ -192,4 +192,6 @@ def plot_sensors_timeseries(sensors, folder="plots", col="pm2.5", suffix=""):
             last_value=sensor.last_value,
             suffix=suffix,
         )
+    locale.setlocale(locale.LC_ALL, "en_GB.utf8")
+    logger.debug(f"Set locale: {locale.getlocale(locale.LC_ALL)}")
     logger.info(f"Plotted {len(sensors)} sensors timeseries")
