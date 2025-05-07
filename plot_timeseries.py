@@ -132,13 +132,13 @@ def add_last_value(last_dt, last_value, ax):
         ax.set_yticks([])
 
 
-def plot_timeseries(df, ax):
+def plot_timeseries(df, ax, col="pm2.5"):
     if df.count().values[0] <= 1:
         show_no_data(ax)
     else:
         ax.plot(
             df.index,
-            df["pm2.5"],
+            df[col],
             ".-",
             color="black",
             linewidth=1,
@@ -151,10 +151,12 @@ def plot_timeseries(df, ax):
 def plot_sensor_timeseries(
     df_7d,
     df_24h,
+    col="pm2.5",
     name="sensor_a",
     folder="plots",
     last_dt=None,
     last_value=None,
+    suffix="",
 ):
     fig, axes = plt.subplots(
         2, 2, figsize=(10, 6), gridspec_kw={"width_ratios": [1, 2]}
@@ -164,27 +166,30 @@ def plot_sensor_timeseries(
     ax_lower_left = axes[1][0]
     ax_lower_right = axes[1][1]
 
-    plot_timeseries(df_24h, ax_top_right)
-    plot_timeseries(df_7d, ax_lower_right)
+    plot_timeseries(df_24h, ax_top_right, col=col)
+    plot_timeseries(df_7d, ax_lower_right, col=col)
     add_logos(ax_lower_left, sensor_name=SENSOR_NAMES_GR.get(name))
     add_last_value(last_dt, last_value, ax_top_left)
     fig.subplots_adjust(hspace=0.3)
     mkdir_if_not_exists(folder)
-    plt.savefig(f"{folder}/{name}.jpg")
+    figname = f"{folder}/{name}{suffix}.jpg"
+    plt.savefig(figname)
     plt.close()
-    logger.debug(f"Plotted {name} ")
+    logger.debug(f"Plotted {figname} ")
 
 
-def plot_sensors_timeseries(sensors, folder="plots"):
+def plot_sensors_timeseries(sensors, folder="plots", col="pm2.5", suffix=""):
     locale.setlocale(locale.LC_ALL, "el_GR.utf8")
     logger.debug(f"Set locale: {locale.getlocale(locale.LC_ALL)}")
     for sensor in sensors:
         plot_sensor_timeseries(
             sensor.data_7d,
             sensor.data_24h,
+            col=col,
             name=sensor.name,
             folder=folder,
             last_dt=sensor.last_dt,
             last_value=sensor.last_value,
+            suffix=suffix,
         )
     logger.info(f"Plotted {len(sensors)} sensors timeseries")

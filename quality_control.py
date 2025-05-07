@@ -53,8 +53,15 @@ def calc_pm25(df):
     df.loc[ratio > 0.6, "pm2.5"] = np.nan
 
 
+def calc_pm10(df):
+    df["pm10.0"] = df[["pm10.0_cf_1_a", "pm10.0_cf_1_b"]].mean(axis=1)
+    ratio = abs(df["pm10.0_cf_1_a"] - df["pm10.0_cf_1_b"]) / df["pm10.0"]
+    df.loc[ratio > 0.6, "pm10.0"] = np.nan
+
+
 def quality_control(df):
     clean(df)
     apply_calibration_factor(df)
     calc_pm25(df)
-    df.drop(columns=df.columns.difference(["pm2.5"]), inplace=True)
+    calc_pm10(df)
+    df.drop(columns=df.columns.difference(["pm2.5", "pm10.0"]), inplace=True)

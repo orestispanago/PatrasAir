@@ -8,12 +8,14 @@ from mapsplotlib import mapsplot as mplt
 from mapsplotlib.google_static_maps_api import GoogleStaticMapsAPI
 
 from plot_timeseries import pm_to_aqi_color
+from config import GOOGLE_MAPS_API_KEY
 
 logger = logging.getLogger(__name__)
 
 
 def get_background(center_lat, center_lon, zoom, scale, max_size, api_key=None):
     map_background_file = "map_background.pickle"
+    api_key = GOOGLE_MAPS_API_KEY
     if api_key:
         mplt.register_api_key(api_key)
         img = GoogleStaticMapsAPI.map(
@@ -35,7 +37,7 @@ def get_background(center_lat, center_lon, zoom, scale, max_size, api_key=None):
 
 def calc_map_params(lats, lons):
     scale = 2
-    max_size = 640  # Max size of the map in pixels
+    max_size = 580  # Max size of the map in pixels
     width = scale * max_size
     center_lat = (lats.max() + lats.min()) / 2
     center_lon = (lons.max() + lons.min()) / 2
