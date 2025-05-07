@@ -24,17 +24,19 @@ logger = logging.getLogger(__name__)
 def main():
     logger.info(f"{'-' * 15} START {'-' * 15}")
 
-    # logger.debug("Starting Patras task...")
-    # download_sensors_data(sensors_csv="sensors_patras.csv", dir="data/patras")
-    # sensors_patras = read_sensors(
-    #     sensors_csv="sensors_patras.csv", data_dir="data/patras"
-    # )
-    # plot_sensors_timeseries(sensors_patras, folder="plots/patras")
-    # plot_scatter_map(sensors_patras, fname="plots/patras/map.jpg")
-    # local_files_patras = glob.glob("plots/patras/*.jpg")
-    # ftp_upload_files(local_files_patras)
-    # logger.debug("Patras task complete.")
+    """ ============================== PATRAS ============================== """
+    logger.debug("Starting Patras task...")
+    download_sensors_data(sensors_csv="sensors_patras.csv", dir="data/patras")
+    sensors_patras = read_sensors(
+        sensors_csv="sensors_patras.csv", data_dir="data/patras"
+    )
+    plot_sensors_timeseries(sensors_patras, folder="plots/patras")
+    plot_scatter_map(sensors_patras, fname="plots/patras/map.jpg")
+    local_files_patras = glob.glob("plots/patras/*.jpg")
+    ftp_upload_files(local_files_patras)
+    logger.debug("Patras task complete.")
 
+    """ ============================== TITAN ============================== """
     logger.debug("Starting Titan task...")
     download_sensors_data(
         sensors_csv="sensors_titan.csv", dir="data/titan", download_daily=True
