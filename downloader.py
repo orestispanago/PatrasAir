@@ -65,6 +65,7 @@ def download_csv(
     resp = get_sensor_history_csv(sensor_id, start, end, average_minutes)
     if resp.status_code == 200:
         df = read_response(resp)
+        save_as_csv(df, f"{dir}-raw", sensor_name, prefix)
         quality_control(df)
         save_as_csv(df, dir, sensor_name, prefix)
     else:

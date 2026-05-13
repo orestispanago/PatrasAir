@@ -1,6 +1,5 @@
 import locale
 import logging
-
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -101,7 +100,9 @@ def show_no_data(ax):
 
 
 def add_last_value(last_dt, last_value, ax):
-    if not last_value:
+    try:
+        int(last_value)
+    except:
         show_no_data(ax)
     else:
         last_pm_value = int(last_value)
