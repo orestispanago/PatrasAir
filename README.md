@@ -11,6 +11,16 @@ Plots last values on google map. Markers are colored according Air Quality Index
 
 Uploads image files to FTP server.
 
+## Setup
+
+```
+sudo apt install python3-dotenv
+cp .env.example .env
+chmod 600 .env
+```
+
+Set the real values in `.env` (PurpleAir API key, website FTP credentials), replacing the placeholders. It is in `.gitignore`.
+
 To avoid overlapping cron job execution, use flock in crontab:
 
 ```

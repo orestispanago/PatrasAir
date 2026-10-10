@@ -2,7 +2,7 @@ import logging
 import os
 from ftplib import FTP
 
-from config import FTP_DIR, FTP_IP, FTP_PASSWORD, FTP_USER
+from config import FTP_DIR, FTP_IP, FTP_PASS, FTP_USER
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ def ftp_upload_file(ftp_session, local_path, remote_path, ftp_dir=FTP_DIR):
 
 
 def ftp_upload_files(local_files, ftp_dir=FTP_DIR):
-    with FTP(FTP_IP, FTP_USER, FTP_PASSWORD) as ftp:
+    with FTP(FTP_IP, FTP_USER, FTP_PASS) as ftp:
         ftp.cwd(ftp_dir)
         for local_file in local_files:
             base_name = os.path.basename(local_file)

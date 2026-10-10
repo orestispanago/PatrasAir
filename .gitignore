@@ -6,3 +6,7 @@ data/
 __pycache__/
 
 plots/
+
+.vscode/
+
+.env
